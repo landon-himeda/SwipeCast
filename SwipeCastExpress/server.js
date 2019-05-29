@@ -10,10 +10,6 @@ app.use(express.static(__dirname + "/static"));
 
 app.get("/", function (request, response){
     response.render("index");
-})
+});
 
-var roomList = [];
-
-require("./Room");
-require("./Player");
 require("./Sockets")(server);

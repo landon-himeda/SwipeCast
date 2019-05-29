@@ -4,12 +4,14 @@ module.exports =  class Room {
         this.Players = [];
         this.Players.push(player);
         console.log(`New room "${this.Name}" instantiated.`)
-        console.log(`Player "${player.Name}" `)
+        console.log(`Player "${player}" `)
     }
 
     addPlayer(player) {
         if (this.Players.length < 2) {
             this.Players.push(player);
+        } else {
+            
         }
     }
 }
