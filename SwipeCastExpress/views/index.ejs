@@ -11,6 +11,7 @@
         $(document).ready(function (){
             var socket = io();
             var createRoomButton = document.getElementById("createRoomButton");
+            var joinRoomButton = document.getElementById
             var damageButton = document.getElementById("damageButton");
             var myHealthSpan = document.getElementById("myHealth");
             var opponentsHealthSpan = document.getElementById("opponentsHealth");
@@ -22,11 +23,29 @@
                 $("#opponentsHealth").html(opponentsHealth);
             }
 
+            var roomListHTML = "";
+            var playerName = undefined;
             var joinedRoom = undefined;
 
+            createPlayerButton.addEventListener("click", function() {
+                socket.emit("Create Player", $("#createPlayerName").val());
+                playerName = $("#createPlayerName").val();
+                $("#createPlayerForm").hide();
+                $("#createRoomForm").show();
+                update();
+            });
+
             createRoomButton.addEventListener("click", function() {
-                socket.emit("Create Room", $("#createRoomName").val());
+                socket.emit("Create Room", $("#createRoomName").val(), playerName);
                 joinedRoom = $("#createRoomName").val();
+                $("#createRoomForm").hide();
+                $("#gameSpace").show();
+                update();
+            });
+
+            joinRoomButton.addEventListener("click", function() {
+                socket.emit("Join Room", $(this).attr("roomName"), playerName);
+                joinedRoom = $(this).attr("roomName");
                 $("#createRoomForm").hide();
                 $("#gameSpace").show();
                 update();
@@ -40,6 +59,12 @@
                 }
                 socket.emit("Give Damage", joinedRoom);
                 update();
+            });
+
+            socket.on("Update Room List", function(roomList) {
+                for (let room of roomList) {
+                    roomListHTML += `<button class="btn btn-info joinRoomButton" roomName="${room}">${room}</button>`;
+                }
             });
 
             socket.on("Take Damage", function() {
@@ -74,12 +99,19 @@
     <div class="container" id="container">
         <div class="row">
             <div class="col">
-                <div id="createRoomForm">
+                <div id="createPlayerForm">
+                    <h1>Create User</h1>
+                    <p>Username:</p>
+                    <input type="text" id="createPlayerName">
+                    <button class="btn btn-success" id="createPlayerButton">Create User</button>
+                </div>
+                <div id="createRoomForm" style="display: none;">
                     <h1>Create Room</h1>
                     <p>Room Name:</p>
                     <input type="text" id="createRoomName">
                     <button class="btn btn-success" id="createRoomButton">Create Room</button>
                 </div>
+                <div id="roomList"></div>
                 <div id="gameSpace" style="display: none;">
                     <p>My health: <span id="myHealth"></span></p>
                     <p>Opponent's health: <span id="opponentsHealth"></span></p>
