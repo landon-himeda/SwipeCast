@@ -1,12 +1,8 @@
-<<<<<<< HEAD
-require("./Player")
-=======
 const Room = require("./Room");
 const Player = require("./Player");
 
 var roomList = [];
 var roomDict = {};
->>>>>>> ce051d6fc6fe6093b86de454418a64c31a890c81
 
 module.exports = function(server) {
     const io = require('socket.io')(server);
@@ -16,11 +12,7 @@ module.exports = function(server) {
 
         socket.on("Create Player", function(nickname) {
             newPlayer = new Player(nickname);
-<<<<<<< HEAD
-            console.log(newPlayer)
-=======
             socket.emit("Update Room List", roomList);
->>>>>>> ce051d6fc6fe6093b86de454418a64c31a890c81
         });
 
         socket.on("Create Room", function(roomName, creator) {
