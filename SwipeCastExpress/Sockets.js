@@ -1,3 +1,5 @@
+require("./Player")
+
 module.exports = function(server) {
     const io = require('socket.io')(server);
 
@@ -5,6 +7,7 @@ module.exports = function(server) {
         console.log("Socket connection established! User connected.")
         socket.on("Create Player", function(nickname) {
             newPlayer = new Player(nickname);
+            console.log(newPlayer)
         });
 
         socket.on("Create Room", function(roomName) {
