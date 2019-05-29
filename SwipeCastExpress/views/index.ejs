@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    <script type="text/javascript" src="/socket.io/socket.io.js"></script>
+    <script type ="text/javascript">
+        $(document).ready(function (){
+            var socket = io();
+            var createRoomButton = document.getElementById("createRoomButton");
+            var damageButton = document.getElementById("damageButton");
+            var myHealthSpan = document.getElementById("myHealth");
+            var opponentsHealthSpan = document.getElementById("opponentsHealth");
+            var myHealth = 100;
+            var opponentsHealth = 100;
+
+            function update() {
+                $("#myHealth").html(myHealth);
+                $("#opponentsHealth").html(opponentsHealth);
+            }
+
+            var joinedRoom = undefined;
+
+            createRoomButton.addEventListener("click", function() {
+                socket.emit("Create Room", $("#createRoomName").val());
+                joinedRoom = $("#createRoomName").val();
+                $("#createRoomForm").hide();
+                $("#gameSpace").show();
+                update();
+            });
+
+            damageButton.addEventListener("click", function() {
+                opponentsHealth -= 10;
+                if (opponentsHealth <= 0) {
+                    $("#startOverWin").show();
+                    $("#gameSpace").hide();
+                }
+                socket.emit("Give Damage", joinedRoom);
+                update();
+            });
+
+            socket.on("Take Damage", function() {
+                myHealth -= 10;
+                if (myHealth <= 0) {
+                    $("#startOverLose").show();
+                    $("#gameSpace").hide();
+                }
+                update();
+            });
+
+            $(".startOverBtn").click(function() {
+                socket.emit("Start Over", joinedRoom);
+                update();
+            });
+
+            socket.on("Restart Game", function() {
+                myHealth = 100;
+                opponentsHealth = 100;
+                $("#startOverLose").hide();
+                $("#startOverWin").hide();
+                $("#gameSpace").show();
+                update();
+            });
+
+            update();
+        })
+    </script>
+    <title>Document</title>
+</head>
+<body>
+    <div class="container" id="container">
+        <div class="row">
+            <div class="col">
+                <div id="createRoomForm">
+                    <h1>Create Room</h1>
+                    <p>Room Name:</p>
+                    <input type="text" id="createRoomName">
+                    <button class="btn btn-success" id="createRoomButton">Create Room</button>
+                </div>
+                <div id="gameSpace" style="display: none;">
+                    <p>My health: <span id="myHealth"></span></p>
+                    <p>Opponent's health: <span id="opponentsHealth"></span></p>
+                    <button class="btn btn-danger" id="damageButton">Damage Opponent</button>
+                </div>
+                <div id="startOverWin" style="display: none;">
+                    <h2 class="text-success">YOU WIN</h2>
+                    <button class="btn btn-primary startOverBtn">Start Over?</button>
+                </div>
+                <div id="startOverLose" style="display: none;">
+                    <h2 class="text-danger">YOU LOSE</h2>
+                    <button class="btn btn-primary startOverBtn">Start Over?</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
