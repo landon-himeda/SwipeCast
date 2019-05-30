@@ -1,5 +1,5 @@
-// const Room = require("./Room");
-// const Player = require("./Player");
+// const Room = require("./models/Room");
+// const Player = require("./models/Player");
 
 var roomList = [];
 // var roomDict = {};
@@ -47,8 +47,8 @@ module.exports = function(server) {
             socket.to(joinedRoom).emit("Attack", attackType);
         });
 
-        socket.on("Defense", function(joinedRoom, defenseType) {
-            socket.to(joinedRoom).emit("Defense", defenseType);
+        socket.on("Defense", function(joinedRoom, defenseResult) {
+            socket.to(joinedRoom).emit("Defense", defenseResult);
         });
 
         socket.on("Start Over", function(joinedRoom) {
