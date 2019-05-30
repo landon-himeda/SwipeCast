@@ -11,16 +11,31 @@
         $(document).ready(function (){
             var socket = io();
             var createRoomButton = document.getElementById("createRoomButton");
-            var joinRoomButton = document.getElementById
-            var damageButton = document.getElementById("damageButton");
+
+            // var damageButton = document.getElementById("damageButton");
+
             var myHealthSpan = document.getElementById("myHealth");
             var opponentsHealthSpan = document.getElementById("opponentsHealth");
             var myHealth = 100;
             var opponentsHealth = 100;
+            var incomingAttacks = [];
+            var outgoingAttacks = [];
 
             function update() {
                 $("#myHealth").html(myHealth);
                 $("#opponentsHealth").html(opponentsHealth);
+                $("#roomList").html(roomListHTML);
+                console.log(`Room list html: ${roomListHTML}`)
+
+                $(".joinRoomButton").click(function() {
+                    socket.emit("Join Room", $(this).attr("roomName"), playerName);
+                    joinedRoom = $(this).attr("roomName");
+                    $("#createRoomForm").hide();
+                    $("#roomList").hide();
+                    $("#roomListHeader").hide();
+                    $("#waitingRoom").show();
+                    update();
+                });
             }
 
             var roomListHTML = "";
@@ -32,6 +47,8 @@
                 playerName = $("#createPlayerName").val();
                 $("#createPlayerForm").hide();
                 $("#createRoomForm").show();
+                $("#roomList").show();
+                $("#roomListHeader").show();
                 update();
             });
 
@@ -39,32 +56,68 @@
                 socket.emit("Create Room", $("#createRoomName").val(), playerName);
                 joinedRoom = $("#createRoomName").val();
                 $("#createRoomForm").hide();
-                $("#gameSpace").show();
+                $("#roomList").hide();
+                $("#roomListHeader").hide();
+                $("#waitingRoom").show();
                 update();
             });
 
-            joinRoomButton.addEventListener("click", function() {
-                socket.emit("Join Room", $(this).attr("roomName"), playerName);
-                joinedRoom = $(this).attr("roomName");
-                $("#createRoomForm").hide();
-                $("#gameSpace").show();
-                update();
-            });
-
-            damageButton.addEventListener("click", function() {
-                opponentsHealth -= 10;
-                if (opponentsHealth <= 0) {
-                    $("#startOverWin").show();
-                    $("#gameSpace").hide();
-                }
-                socket.emit("Give Damage", joinedRoom);
-                update();
-            });
+            // damageButton.addEventListener("click", function() {
+            //     opponentsHealth -= 10;
+            //     if (opponentsHealth <= 0) {
+            //         $("#startOverWin").show();
+            //         $("#gameSpace").hide();
+            //     }
+            //     socket.emit("Give Damage", joinedRoom);
+            //     update();
+            // });
 
             socket.on("Update Room List", function(roomList) {
+                roomListHTML = "";
                 for (let room of roomList) {
-                    roomListHTML += `<button class="btn btn-info joinRoomButton" roomName="${room}">${room}</button>`;
+                    roomListHTML += `<button class="btn btn-info mb-2 joinRoomButton" roomName="${room}">${room}</button><br>`;
                 }
+                update();
+            });
+
+            socket.on("Player Joined", function() {
+                $("#startGameButton").show();
+            });
+
+            $("#startGameButton").click(function() {
+                socket.emit("Start Game", joinedRoom);
+                update();
+            });
+
+            $("#fireAttackButton").click(function() {
+                outgoingAttacks.push("fire");
+                socket.emit("Attack", joinedRoom, "fire");
+            });
+
+            $("#waterAttackButton").click(function() {
+                outgoingAttacks.push("water");
+                socket.emit("Attack", joinedRoom, "water");
+            });
+
+            $("#earthAttackButton").click(function() {
+                outgoingAttacks.push("earth");
+                socket.emit("Attack", joinedRoom, "earth");
+            });
+
+            $("#fireDefenseButton").click(function() {
+                socket.emit("Defense", joinedRoom, "fire");
+            });
+
+            $("#waterDefenseButton").click(function() {
+                socket.emit("Defense", joinedRoom, "water");
+            });
+
+            $("#earthDefenseButton").click(function() {
+                socket.emit("Defense", joinedRoom, "earth");
+            });
+
+            socket.on("Attack", function(attackType) {
+                incomingAttacks.push(attackType);
             });
 
             socket.on("Take Damage", function() {
@@ -90,6 +143,14 @@
                 update();
             });
 
+            socket.on("Start Game", function() {
+                myHealth = 100;
+                opponentsHealth = 100;
+                $("#waitingRoom").hide();
+                $("#gameSpace").show();
+                update();
+            });
+
             update();
         })
     </script>
@@ -111,11 +172,25 @@
                     <input type="text" id="createRoomName">
                     <button class="btn btn-success" id="createRoomButton">Create Room</button>
                 </div>
-                <div id="roomList"></div>
+                <h1 id="roomListHeader" style="display: none;">Room List:</h1>
+                <div id="roomList" style="display: none;"></div>
+                <div id="waitingRoom" style="display: none;">
+                    <p>Waiting for other player...</p>
+                    <button class="btn btn-success" id="startGameButton" style="display: none;">Start Game</button>
+                </div>
                 <div id="gameSpace" style="display: none;">
                     <p>My health: <span id="myHealth"></span></p>
                     <p>Opponent's health: <span id="opponentsHealth"></span></p>
-                    <button class="btn btn-danger" id="damageButton">Damage Opponent</button>
+                    <p>Incoming Attacks: <span id="incomingAttacks"></span></p>
+                    <p>Outgoing Attacks: <span id="outgoingAttacks"></span></p>
+                    <button class="btn btn-danger mr-2" id="fireAttackButton">Fire Attack</button>
+                    <button class="btn btn-primary mr-2" id="waterAttackButton">Water Attack</button>
+                    <button class="btn btn-success" id="earthAttackButton">Earth Attack</button>
+                    <br>
+                    <br>
+                    <button class="btn btn-danger mr-2" id="fireDefenseButton">Fire Defense</button>
+                    <button class="btn btn-primary mr-2" id="waterDefenseButton">Water Defense</button>
+                    <button class="btn btn-success" id="earthDefenseButton">Earth Defense</button>
                 </div>
                 <div id="startOverWin" style="display: none;">
                     <h2 class="text-success">YOU WIN</h2>

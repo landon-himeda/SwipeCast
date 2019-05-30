@@ -1,17 +1,17 @@
-module.exports =  class Room {
-    constructor(roomName, player) {
-        this.Name = roomName;
-        this.Players = [];
-        this.Players.push(player);
-        console.log(`New room "${this.Name}" instantiated.`)
-        console.log(`Player "${player}" `)
-    }
+// module.exports =  class Room {
+//     constructor(roomName, player) {
+//         this.Name = roomName;
+//         this.Players = [];
+//         this.Players.push(player);
+//         console.log(`New room "${this.Name}" instantiated.`)
+//         console.log(`Player "${player}" `)
+//     }
 
-    addPlayer(player) {
-        if (this.Players.length < 2) {
-            this.Players.push(player);
-        } else {
+//     addPlayer(player) {
+//         if (this.Players.length < 2) {
+//             this.Players.push(player);
+//         } else {
             
-        }
-    }
-}
+//         }
+//     }
+// }
