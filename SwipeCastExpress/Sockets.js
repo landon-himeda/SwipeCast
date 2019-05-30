@@ -1,5 +1,5 @@
-const Room = require("./Room");
-const Player = require("./Player");
+// const Room = require("./models/Room");
+// const Player = require("./models/Player");
 
 var roomList = [];
 var roomDict = {};
@@ -37,18 +37,26 @@ module.exports = function(server) {
             io.to(roomName).emit("Join Room", joiner)
         });
         
-        socket.on("Give Damage", function(joinedRoom) {
-            socket.to(joinedRoom).emit("Take Damage");
+        socket.on("Start Game", function(joinedRoom) {
+            socket.to(joinedRoom).emit("Start Game")
+        })
+
+        socket.on("Attack", function(joinedRoom, attackType) {
+            socket.to(joinedRoom).emit("Attack", attackType);
+        });
+
+        socket.on("Defense", function(joinedRoom, defenseResult) {
+            socket.to(joinedRoom).emit("Defense", defenseResult);
         });
 
         socket.on("Start Over", function(joinedRoom) {
             io.to(joinedRoom).emit("Restart Game");
         });
 
-        // socket.on('disconnect', function() {
-        //     console.log("User has disconnected.")
-        //     socket.broadcast.emit()
+        socket.on('disconnect', function() {
+            console.log("User has disconnected.")
+            socket.broadcast.emit()
 
-        // });
+        });
     });
 }
