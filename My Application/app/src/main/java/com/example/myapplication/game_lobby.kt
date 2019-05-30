@@ -1,42 +1,36 @@
 package com.example.myapplication
 
-import android.content.Context
+
 import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.provider.AlarmClock.EXTRA_MESSAGE
-import android.view.LayoutInflater
 import android.view.View
-import android.view.ViewGroup
 import android.widget.*
 import com.github.nkzawa.socketio.client.IO;
 import com.github.nkzawa.socketio.client.Socket;
-import kotlinx.android.synthetic.main.activity_game_lobby.*
-import java.net.URL
+
+
+
+
+
 
 
 const val server = "http://192.168.1.150:1337"
-private val socket = IO.socket(server)
-private var gamelistArray = arrayOf(Int)
+val socket = IO.socket(server)
 
 class GameLobby : AppCompatActivity() {
-
+    private var username: String = ""
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_game_lobby)
-
-        val gameListView = findViewById<LinearLayout>(R.id.lobby_game_list)
-
-
-//        val gamelistfromserver = URL("http://localhost:3000/").readText()
-        val textView: TextView = findViewById(R.id.textView4)
-
-        val message = intent.getStringExtra(EXTRA_MESSAGE)
-        textView.text = message
         socket.connect()
             .on(Socket.EVENT_CONNECT ) {println("Connected")}
-            socket.emit("Create Player", message )
-//        gameListView.adapter = GameListAdapter(this)
+            .emit("Create Player", username )
+        val gameListView = findViewById<LinearLayout>(R.id.lobby_game_list)
+        val textView: TextView = findViewById(R.id.textView4)
+        this.username = intent.getStringExtra(EXTRA_MESSAGE)
+        textView.text = "Welcome $username, Pick an open game to join or create a new one!"
 
 
         val lprams = LinearLayout.LayoutParams(
@@ -44,29 +38,42 @@ class GameLobby : AppCompatActivity() {
             LinearLayout.LayoutParams.WRAP_CONTENT
         )
 
-//        for (i in 0 until gamelistArray.size) {
-        for (i in 1..5) {
-            val btn = Button(this)
-            btn.id=(i + 1)
-            btn.text=("Button" + (i + 1))
-            btn.layoutParams = (lprams)
-            btn.setOnClickListener {joinGame("btn $i")}
-            gameListView.addView(btn)
-        }
 
+        socket.on("Update Room List"){ vals ->
+            gameListView.removeAllViewsInLayout()
+            val result = vals[0].toString()
+            var valarray = result.removeSurrounding("[", "]").split(",").map {it.toString()}
+
+            runOnUiThread {
+                for (i in 0 until valarray.size) {
+                    val btn = Button(this)
+                    btn.id = (i)
+                    btn.text = ("Game VS" + valarray[i])
+                    btn.layoutParams = (lprams)
+//
+                    btn.setOnClickListener {joinGame(valarray[i])}
+                    gameListView.addView(btn)
+                }
+            }
+        }
     }
+
+
     fun joinGame( gameid: String) {
-        val gameid = gameid
-        val message:  String =("This is a string")
-        val intent = Intent(this, PendingGame::class.java).apply {
-            putExtra(EXTRA_MESSAGE, message)
+            val message = arrayOf(gameid,username)
+            val intent = Intent(this, PendingGame::class.java).apply {
+                putExtra(EXTRA_MESSAGE, message)
+            }
+            socket.emit("Join Room", gameid,username)
+            startActivity(intent)
         }
-        startActivity(intent)
-    }
-    fun createGame() {
-        val message:  String =("This is a string")
-        val intent = Intent(this, PendingGame::class.java).apply {
-            putExtra(EXTRA_MESSAGE, message)
-        }
+    fun createGame(view:View) {
+            val message = arrayOf(username,"")
+            val intent = Intent(this, PendingGame::class.java).apply {
+                putExtra(EXTRA_MESSAGE, message)
+
+            }
+            socket.emit("Create Room", username)
+            startActivity(intent)
     }
 }

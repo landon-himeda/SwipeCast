@@ -2,4 +2,7 @@
     <string name="app_name">My Application</string>
     <string name="login">Please Enter a User Name</string>
     <string name="start_game">Start</string>
+    <string name="instructions">Use the Right Buttons to Cast Spells at your opponents. Incoming spells will appear on
+        the left and can be blocked by using the correct button on the left.
+    </string>
 </resources>
