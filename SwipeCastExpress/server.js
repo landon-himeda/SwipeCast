@@ -1,7 +1,7 @@
 var express = require("express");
 var http = require('http');
 var app = express();
-const server = app.listen(1337);
+const server = app.listen(1337,'10.0.0.6');
 
 app.set("views", __dirname + "/views");
 app.set("view engine", "ejs");
