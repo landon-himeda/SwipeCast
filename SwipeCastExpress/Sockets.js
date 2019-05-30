@@ -1,8 +1,8 @@
-// const Room = require("./Room");
-// const Player = require("./Player");
+const Room = require("./Room");
+const Player = require("./Player");
 
 var roomList = [];
-// var roomDict = {};
+var roomDict = {};
 
 module.exports = function(server) {
     const io = require('socket.io')(server);
@@ -13,50 +13,42 @@ module.exports = function(server) {
         socket.on("Create Player", function(nickname) {
             // newPlayer = new Player(nickname);
             socket.emit("Update Room List", roomList);
+            socket.join("lobby")
         });
 
-        socket.on("Create Room", function(roomName, creator) {
-            // newRoom = new Room(roomName, creator);
+        socket.on("Create Room", function(roomName) {
+            // newRoom = new Room(roomName, roomName);
             // roomDict[roomName] = newRoom;
             roomList.push(roomName);
+            socket.leave("lobby")
             socket.join(roomName);
             console.log(`User created room: ${roomName}`);
-            // console.log(`RoomDict: ${roomDict}`);
+            console.log(`RoomDict: ${roomDict}`);
             console.log(`RoomList: ${roomList}`);
-            io.emit("Update Room List", roomList);
+            io.to("lobby").emit("Update Room List", roomList);
         });
 
         socket.on("Join Room", function(roomName, joiner) {
-            socket.join(roomName);
-            for(var i = 0; i < roomList.length; i++){ 
-                if (roomList[i] === roomName) {
-                    roomList.splice(i, 1); 
-                }
-            }
-            console.log(`User "${joiner}" joined room "${roomName}"`);
-            console.log(`Updated room list: ${roomList}`);
-            io.to(roomName).emit("Player Joined");
-            io.emit("Update Room List", roomList);
-        });
-
-        socket.on("Start Game", function(joinedRoom) {
-            io.to(joinedRoom).emit("Start Game");
+            console.log(roomName,joiner)
+            socket.leave("lobby")
+            socket.join(roomName)
+            roomList.splice( roomList.indexOf(roomName), 1 );
+            io.to("lobby").emit("Update Room List", roomList);
+            io.to(roomName).emit("Join Room", joiner)
         });
         
-        socket.on("Attack", function(joinedRoom, attackType) {
-            socket.to(joinedRoom).emit("Attack", attackType);
-        });
-
-        socket.on("Defense", function(joinedRoom, defenseType) {
-            socket.to(joinedRoom).emit("Defense", defenseType);
+        socket.on("Give Damage", function(joinedRoom) {
+            socket.to(joinedRoom).emit("Take Damage");
         });
 
         socket.on("Start Over", function(joinedRoom) {
             io.to(joinedRoom).emit("Restart Game");
         });
 
-        socket.on('disconnect', function() {
-            console.log("User has disconnected.")
-        });
+        // socket.on('disconnect', function() {
+        //     console.log("User has disconnected.")
+        //     socket.broadcast.emit()
+
+        // });
     });
 }
