@@ -32,8 +32,8 @@ class GameWindow : AppCompatActivity() {
         var atkBtnWater: ImageButton = findViewById(R.id.waterAttack)
         var atkBtnEarth: ImageButton = findViewById(R.id.earthAttack)
         atkBtnFire.setOnClickListener {attackOpponent("fire")}
-        atkBtnFire.setOnClickListener {attackOpponent("water")}
-        atkBtnFire.setOnClickListener {attackOpponent("earth")}
+        atkBtnWater.setOnClickListener {attackOpponent("water")}
+        atkBtnEarth.setOnClickListener {attackOpponent("earth")}
         opponentHealthDisplay.text = opponentHp.toString()
         if(players[1] == players[0]){
             opponentNameDisplay.text = players[2]
@@ -45,7 +45,7 @@ class GameWindow : AppCompatActivity() {
         Timer("Pending",false).schedule(300,1*300){
             if(attackOutgoing.size >0){
                 var sendattack = attackOutgoing.removeAt(0)
-                socket.emit("attack", players[1],sendattack)
+                socket.emit("Attack", players[1],sendattack)
             }
             atkBtnEarth.isClickable = true
             atkBtnFire.isClickable = true

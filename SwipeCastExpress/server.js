@@ -1,11 +1,7 @@
 var express = require("express");
 var http = require('http');
 var app = express();
-<<<<<<< HEAD
 const server = app.listen(1337,'192.168.2.209');
-=======
-const server = app.listen(1337);
->>>>>>> f1a9d7721fc5abe8a5cadea43a8720919c01fdf3
 
 app.set("views", __dirname + "/views");
 app.set("view engine", "ejs");
