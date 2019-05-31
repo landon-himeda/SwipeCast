@@ -11,12 +11,7 @@ import com.github.nkzawa.socketio.client.IO;
 import com.github.nkzawa.socketio.client.Socket;
 
 
-
-
-
-
-
-const val server = "http://192.168.1.150:1337"
+const val server = "http://192.168.2.209:1337"
 val socket = IO.socket(server)
 
 class GameLobby : AppCompatActivity() {
@@ -51,7 +46,7 @@ class GameLobby : AppCompatActivity() {
                     btn.text = ("Game VS" + valarray[i])
                     btn.layoutParams = (lprams)
 //
-                    btn.setOnClickListener {joinGame(valarray[i])}
+                    btn.setOnClickListener {joinGame(valarray[i].replace("\"",""))}
                     gameListView.addView(btn)
                 }
             }
@@ -68,7 +63,7 @@ class GameLobby : AppCompatActivity() {
             startActivity(intent)
         }
     fun createGame(view:View) {
-            val message = arrayOf(username,"")
+            val message = arrayOf(username,username)
             val intent = Intent(this, PendingGame::class.java).apply {
                 putExtra(EXTRA_MESSAGE, message)
 

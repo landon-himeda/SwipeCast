@@ -38,7 +38,7 @@ module.exports = function(server) {
         });
         
         socket.on("Start Game", function(joinedRoom) {
-            socket.to(joinedRoom).emit("Start Game")
+            io.to(joinedRoom).emit("Start Game")
         })
 
         socket.on("Attack", function(joinedRoom, attackType) {
