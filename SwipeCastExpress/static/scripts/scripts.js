@@ -34,27 +34,57 @@ $(document).ready(function (){
         $("#outgoingAttacks").html(outgoingAttacks);
         $("#myHealth").html(myHealth);
         $("#opponentsHealth").html(opponentsHealth);
-        moveAttacks();
-        drawAttacks();
+    }
+
+    function renderNextAttacks() {
+        if (incomingAttacks.length > 0) {
+            renderedIncomingAttacks.push({
+                "element": `${incomingAttacks.shift()}Attack`,
+                "bottom": 0,
+                "right": 0
+            });
+            console.log(`renderedIncomingAttacks: ${renderedIncomingAttacks}`);
+        }
+        if (outgoingAttacks.length > 0) {
+            renderedOutgoingAttacks.push({
+                "element": `${outgoingAttacks.shift()}Attack`,
+                "bottom": 60,
+                "left": 0
+            });
+            console.log(`renderedOutgoingAttacks: ${renderedOutgoingAttacks}`);
+        }
     }
 
     function moveAttacks() {
         for (var idx = 0; idx < renderedIncomingAttacks.length; idx++) {
-            renderedIncomingAttacks[idx].left -= 3;
+            renderedIncomingAttacks[idx].right += 10;
         }
         for (var idx = 0; idx < renderedOutgoingAttacks.length; idx++) {
-            renderedOutgoingAttacks[idx].left += 3;
+            renderedOutgoingAttacks[idx].left += 10;
         }
+        if (renderedIncomingAttacks.length > 0) {
+            if (renderedIncomingAttacks[0].right >= 600) {
+                renderedIncomingAttacks.shift();
+                socket.emit("Defense", joinedRoom, "took damage");
+                myHealth -= 10;
+                if (myHealth <= 0) {
+                    $("#startOverLose").show();
+                    $("#gameSpace").hide();
+                }
+            }
+        }
+        
     };
 
     function drawAttacks() {
-        content = "";
+        var content = "";
         for (var idx = 0; idx < renderedIncomingAttacks.length; idx++) {
-            if (renderedIncomingAttacks[idx].left < 100) {
-                content += "<div class='" + renderedIncomingAttacks[idx].element +"' style='left:"+enemies[idx].left+"px; top:"+enemies[idx].top+"px'></div>"
-            }
+            content += `<div class='${renderedIncomingAttacks[idx].element}' style='right:${renderedIncomingAttacks[idx].right}px; bottom:${renderedIncomingAttacks[idx].bottom}px'></div>`;
         };
-        document.getElementById("Attacks").innerHTML = content;
+        for (var idx = 0; idx < renderedOutgoingAttacks.length; idx++) {
+            content += `<div class='${renderedOutgoingAttacks[idx].element}' style='left:${renderedOutgoingAttacks[idx].left}px; bottom:${renderedOutgoingAttacks[idx].bottom}px'></div>`;
+        };
+        $("#Attacks").html(content);
     }
 
     var roomListHTML = "";
@@ -81,16 +111,6 @@ $(document).ready(function (){
         update();
     });
 
-    // damageButton.addEventListener("click", function() {
-    //     opponentsHealth -= 10;
-    //     if (opponentsHealth <= 0) {
-    //         $("#startOverWin").show();
-    //         $("#gameSpace").hide();
-    //     }
-    //     socket.emit("Give Damage", joinedRoom);
-    //     update();
-    // });
-
     socket.on("Update Room List", function(roomList) {
         roomListHTML = "";
         for (let room of roomList) {
@@ -99,7 +119,7 @@ $(document).ready(function (){
         update();
     });
 
-    socket.on("Player Joined", function() {
+    socket.on("Join Room", function() {
         $("#startGameButton").show();
     });
 
@@ -127,17 +147,17 @@ $(document).ready(function (){
     });
 
     $("#fireDefenseButton").click(function() {
-        let blockedAttack = incomingAttacks.shift();
-        if (blockedAttack === "fire") {
+        let blockedAttack = renderedIncomingAttacks.shift().element;
+        if (blockedAttack === "fireAttack") {
             socket.emit("Defense", joinedRoom, "negated");
-        } else if (blockedAttack === "water") {
+        } else if (blockedAttack === "waterAttack") {
             socket.emit("Defense", joinedRoom, "took damage");
             myHealth -= 10;
             if (myHealth <= 0) {
                 $("#startOverLose").show();
                 $("#gameSpace").hide();
             }
-        } else if (blockedAttack === "earth") {
+        } else if (blockedAttack === "earthAttack") {
             socket.emit("Defense", joinedRoom, "reflected");
             opponentsHealth -= 5;
             if (opponentsHealth <= 0) {
@@ -149,17 +169,17 @@ $(document).ready(function (){
     });
 
     $("#waterDefenseButton").click(function() {
-        let blockedAttack = incomingAttacks.shift();
-        if (blockedAttack === "fire") {
+        let blockedAttack = renderedIncomingAttacks.shift().element;
+        if (blockedAttack === "fireAttack") {
             socket.emit("Defense", joinedRoom, "reflected");
             opponentsHealth -= 5;
             if (opponentsHealth <= 0) {
                 $("#startOverWin").show();
                 $("#gameSpace").hide();
             }
-        } else if (blockedAttack === "water") {
+        } else if (blockedAttack === "waterAttack") {
             socket.emit("Defense", joinedRoom, "negated");
-        } else if (blockedAttack === "earth") {
+        } else if (blockedAttack === "earthAttack") {
             socket.emit("Defense", joinedRoom, "took damage");
             myHealth -= 10;
             if (myHealth <= 0) {
@@ -171,22 +191,22 @@ $(document).ready(function (){
     });
 
     $("#earthDefenseButton").click(function() {
-        let blockedAttack = incomingAttacks.shift();
-        if (blockedAttack === "fire") {
+        let blockedAttack = renderedIncomingAttacks.shift().element;
+        if (blockedAttack === "fireAttack") {
             socket.emit("Defense", joinedRoom, "took damage");
             myHealth -= 10;
             if (myHealth <= 0) {
                 $("#startOverLose").show();
                 $("#gameSpace").hide();
             }
-        } else if (blockedAttack === "water") {
+        } else if (blockedAttack === "waterAttack") {
             socket.emit("Defense", joinedRoom, "reflected");
             opponentsHealth -= 5;
             if (opponentsHealth <= 0) {
                 $("#startOverWin").show();
                 $("#gameSpace").hide();
             }
-        } else if (blockedAttack === "earth") {
+        } else if (blockedAttack === "earthAttack") {
             socket.emit("Defense", joinedRoom, "negated");
         }
         updateGame();
@@ -211,7 +231,7 @@ $(document).ready(function (){
                 $("#gameSpace").hide();
             }
         }
-        outgoingAttacks.shift();
+        renderedOutgoingAttacks.shift();
         updateGame();
     });
 
@@ -224,7 +244,9 @@ $(document).ready(function (){
         myHealth = 100;
         opponentsHealth = 100;
         incomingAttacks = [];
+        renderedIncomingAttacks = [];
         outgoingAttacks = [];
+        renderedOutgoingAttacks = [];
         $("#startOverLose").hide();
         $("#startOverWin").hide();
         $("#gameSpace").show();
@@ -238,8 +260,14 @@ $(document).ready(function (){
         outgoingAttacks = [];
         $("#waitingRoom").hide();
         $("#gameSpace").show();
-        updateGame();
+        gameLoop();
     });
-
+    function gameLoop() {
+        updateGame();
+        renderNextAttacks();
+        moveAttacks();
+        drawAttacks();
+        setTimeout(gameLoop, 75);
+    }
     update();
-})
+});

@@ -1,5 +1,5 @@
 * {
-    outline: red dotted 1px;
+    /* outline: red dotted 1px; */
 }
 
 #createRoomForm {
@@ -23,7 +23,7 @@
 }
 
 #gameSpace {
-    /* display: none; */
+    display: none;
     background-image: url('../images/ArenaBackground.jpg');
     background-repeat: no-repeat;
     background-size: cover;
@@ -45,15 +45,15 @@
     background-size: 100% 100%;
     height: 100px;
     width: 100px;
+    bottom: 0;
+    right: 0;
 }
 
 #fireAttack {
     position: absolute;
-    left: 200px;
-    top: 200px;
-    background-color: red;
     /* z-index: 2; */
     background-image: url('../images/FireAttack.png');
+    background-size: 100% 100%;
     height: 50px;
     width: 50px;
 }
@@ -61,6 +61,7 @@
 .waterAttack {
     position: absolute;
     background-image: url('../images/WaterAttack.png');
+    background-size: 100% 100%;
     height: 50px;
     width: 50px;
 }
@@ -68,6 +69,7 @@
 .earthAttack {
     position: absolute;
     background-image: url('../images/EarthAttack.png');
+    background-size: 100% 100%;
     height: 50px;
     width: 50px;
 }

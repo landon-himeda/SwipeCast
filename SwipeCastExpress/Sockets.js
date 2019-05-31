@@ -20,7 +20,7 @@ module.exports = function(server) {
             // newRoom = new Room(roomName, roomName);
             // roomDict[roomName] = newRoom;
             roomList.push(roomName);
-            socket.leave("lobby")
+            socket.leave("lobby");
             socket.join(roomName);
             console.log(`User created room: ${roomName}`);
             console.log(`RoomDict: ${roomDict}`);
@@ -30,14 +30,15 @@ module.exports = function(server) {
 
         socket.on("Join Room", function(roomName, joiner) {
             console.log(roomName,joiner)
-            socket.leave("lobby")
-            socket.join(roomName)
+            socket.leave("lobby");
+            socket.join(roomName);
             roomList.splice( roomList.indexOf(roomName), 1 );
             io.to("lobby").emit("Update Room List", roomList);
-            io.to(roomName).emit("Join Room", joiner)
+            io.to(roomName).emit("Join Room", joiner);
         });
         
         socket.on("Start Game", function(joinedRoom) {
+            console.log("Start game emitted")
             io.to(joinedRoom).emit("Start Game")
         })
 
