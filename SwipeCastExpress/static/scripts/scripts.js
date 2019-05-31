@@ -3,8 +3,6 @@ $(document).ready(function (){
     var socket = io();
     var createRoomButton = document.getElementById("createRoomButton");
 
-    // var damageButton = document.getElementById("damageButton");
-
     var myHealthSpan = document.getElementById("myHealth");
     var opponentsHealthSpan = document.getElementById("opponentsHealth");
     var myHealth = 100;
@@ -13,6 +11,7 @@ $(document).ready(function (){
     var renderedIncomingAttacks = [];
     var outgoingAttacks = [];
     var renderedOutgoingAttacks = [];
+    var gameStarted = false;
 
     function update() {
         $("#roomList").html(roomListHTML);
@@ -30,8 +29,6 @@ $(document).ready(function (){
     }
 
     function updateGame() {
-        $("#incomingAttacks").html(incomingAttacks);
-        $("#outgoingAttacks").html(outgoingAttacks);
         $("#myHealth").html(myHealth);
         $("#opponentsHealth").html(opponentsHealth);
     }
@@ -63,11 +60,12 @@ $(document).ready(function (){
             renderedOutgoingAttacks[idx].left += 10;
         }
         if (renderedIncomingAttacks.length > 0) {
-            if (renderedIncomingAttacks[0].right >= 600) {
+            if (renderedIncomingAttacks[0].right >= 1000) {
                 renderedIncomingAttacks.shift();
                 socket.emit("Defense", joinedRoom, "took damage");
                 myHealth -= 10;
                 if (myHealth <= 0) {
+                    gameStarted = false;
                     $("#startOverLose").show();
                     $("#gameSpace").hide();
                 }
@@ -79,10 +77,10 @@ $(document).ready(function (){
     function drawAttacks() {
         var content = "";
         for (var idx = 0; idx < renderedIncomingAttacks.length; idx++) {
-            content += `<div class='${renderedIncomingAttacks[idx].element}' style='right:${renderedIncomingAttacks[idx].right}px; bottom:${renderedIncomingAttacks[idx].bottom}px'></div>`;
+            content += `<div class='${renderedIncomingAttacks[idx].element}Incoming' style='right:${renderedIncomingAttacks[idx].right}px; bottom:${renderedIncomingAttacks[idx].bottom}px'></div>`;
         };
         for (var idx = 0; idx < renderedOutgoingAttacks.length; idx++) {
-            content += `<div class='${renderedOutgoingAttacks[idx].element}' style='left:${renderedOutgoingAttacks[idx].left}px; bottom:${renderedOutgoingAttacks[idx].bottom}px'></div>`;
+            content += `<div class='${renderedOutgoingAttacks[idx].element}Outgoing' style='left:${renderedOutgoingAttacks[idx].left}px; bottom:${renderedOutgoingAttacks[idx].bottom}px'></div>`;
         };
         $("#Attacks").html(content);
     }
@@ -120,13 +118,115 @@ $(document).ready(function (){
     });
 
     socket.on("Join Room", function() {
+        $("#waitingForPlayer").hide();
         $("#startGameButton").show();
     });
+
+    document.onkeydown = function(e) {
+        if (e.code == "KeyF" && gameStarted) {
+            fireAttack();
+        }
+        else if (e.code == "KeyE" && gameStarted) {
+            earthAttack();
+        }
+        else if (e.code == "KeyW" && gameStarted) {
+            waterAttack();
+        }
+        if (e.code == "KeyJ" && gameStarted) {
+            let blockedAttack = renderedIncomingAttacks.shift().element;
+            if (blockedAttack === "fireAttack") {
+                socket.emit("Defense", joinedRoom, "negated");
+            } else if (blockedAttack === "waterAttack") {
+                socket.emit("Defense", joinedRoom, "took damage");
+                myHealth -= 10;
+                if (myHealth <= 0) {
+                    gameStarted = false;
+                    $("#startOverLose").show();
+                    $("#gameSpace").hide();
+                }
+            } else if (blockedAttack === "earthAttack") {
+                socket.emit("Defense", joinedRoom, "reflected");
+                opponentsHealth -= 5;
+                if (opponentsHealth <= 0) {
+                    gameStarted = false;
+                    $("#startOverWin").show();
+                    $("#gameSpace").hide();
+                }
+            }
+            updateGame();
+        }
+        else if (e.code == "KeyI" && gameStarted) {
+            let blockedAttack = renderedIncomingAttacks.shift().element;
+            if (blockedAttack === "fireAttack") {
+                socket.emit("Defense", joinedRoom, "took damage");
+                myHealth -= 10;
+                if (myHealth <= 0) {
+                    gameStarted = false;
+                    $("#startOverLose").show();
+                    $("#gameSpace").hide();
+                }
+            } else if (blockedAttack === "waterAttack") {
+                socket.emit("Defense", joinedRoom, "reflected");
+                opponentsHealth -= 5;
+                if (opponentsHealth <= 0) {
+                    gameStarted = false;
+                    $("#startOverWin").show();
+                    $("#gameSpace").hide();
+                }
+            } else if (blockedAttack === "earthAttack") {
+                socket.emit("Defense", joinedRoom, "negated");
+            }
+            updateGame();
+        }
+        else if (e.code == "KeyO" && gameStarted) {
+            let blockedAttack = renderedIncomingAttacks.shift().element;
+            if (blockedAttack === "fireAttack") {
+                socket.emit("Defense", joinedRoom, "reflected");
+                opponentsHealth -= 5;
+                if (opponentsHealth <= 0) {
+                    gameStarted = false;
+                    $("#startOverWin").show();
+                    $("#gameSpace").hide();
+                }
+            } else if (blockedAttack === "waterAttack") {
+                socket.emit("Defense", joinedRoom, "negated");
+            } else if (blockedAttack === "earthAttack") {
+                socket.emit("Defense", joinedRoom, "took damage");
+                myHealth -= 10;
+                if (myHealth <= 0) {
+                    gameStarted = false;
+                    $("#startOverLose").show();
+                    $("#gameSpace").hide();
+                    renderedIncomingAttacks = [];
+                    outgoingIncomingAttacks = [];
+                }
+            }
+            updateGame();
+        }
+    }
 
     $("#startGameButton").click(function() {
         socket.emit("Start Game", joinedRoom);
         updateGame();
     });
+
+    function fireAttack() {
+        outgoingAttacks.push("fire");
+        socket.emit("Attack", joinedRoom, "fire");
+        updateGame();
+    }
+
+    function waterAttack() {
+        outgoingAttacks.push("water");
+        socket.emit("Attack", joinedRoom, "water");
+        updateGame();
+    }
+
+    function earthAttack() {
+        outgoingAttacks.push("earth");
+        socket.emit("Attack", joinedRoom, "earth");
+        updateGame();
+    }
 
     $("#fireAttackButton").click(function() {
         outgoingAttacks.push("fire");
@@ -154,6 +254,7 @@ $(document).ready(function (){
             socket.emit("Defense", joinedRoom, "took damage");
             myHealth -= 10;
             if (myHealth <= 0) {
+                gameStarted = false;
                 $("#startOverLose").show();
                 $("#gameSpace").hide();
             }
@@ -161,6 +262,7 @@ $(document).ready(function (){
             socket.emit("Defense", joinedRoom, "reflected");
             opponentsHealth -= 5;
             if (opponentsHealth <= 0) {
+                gameStarted = false;
                 $("#startOverWin").show();
                 $("#gameSpace").hide();
             }
@@ -174,6 +276,7 @@ $(document).ready(function (){
             socket.emit("Defense", joinedRoom, "reflected");
             opponentsHealth -= 5;
             if (opponentsHealth <= 0) {
+                gameStarted = false;
                 $("#startOverWin").show();
                 $("#gameSpace").hide();
             }
@@ -183,8 +286,11 @@ $(document).ready(function (){
             socket.emit("Defense", joinedRoom, "took damage");
             myHealth -= 10;
             if (myHealth <= 0) {
+                gameStarted = false;
                 $("#startOverLose").show();
                 $("#gameSpace").hide();
+                renderedIncomingAttacks = [];
+                outgoingIncomingAttacks = [];
             }
         }
         updateGame();
@@ -196,6 +302,7 @@ $(document).ready(function (){
             socket.emit("Defense", joinedRoom, "took damage");
             myHealth -= 10;
             if (myHealth <= 0) {
+                gameStarted = false;
                 $("#startOverLose").show();
                 $("#gameSpace").hide();
             }
@@ -203,6 +310,7 @@ $(document).ready(function (){
             socket.emit("Defense", joinedRoom, "reflected");
             opponentsHealth -= 5;
             if (opponentsHealth <= 0) {
+                gameStarted = false;
                 $("#startOverWin").show();
                 $("#gameSpace").hide();
             }
@@ -214,6 +322,7 @@ $(document).ready(function (){
 
     socket.on("Attack", function(attackType) {
         incomingAttacks.push(attackType);
+        console.log(`Incoming Attacks: ${incomingAttacks}`)
         updateGame();
     });
 
@@ -223,12 +332,16 @@ $(document).ready(function (){
             if (opponentsHealth <= 0) {
                 $("#startOverWin").show();
                 $("#gameSpace").hide();
+                renderedIncomingAttacks = [];
+                outgoingIncomingAttacks = [];
             }
         } else if (defenseResult === "reflected") {
             myHealth -= 5;
             if (myHealth <= 0) {
                 $("#startOverLose").show();
                 $("#gameSpace").hide();
+                renderedIncomingAttacks = [];
+                outgoingIncomingAttacks = [];
             }
         }
         renderedOutgoingAttacks.shift();
@@ -241,6 +354,7 @@ $(document).ready(function (){
     });
 
     socket.on("Restart Game", function() {
+        gameStarted = true;
         myHealth = 100;
         opponentsHealth = 100;
         incomingAttacks = [];
@@ -254,6 +368,7 @@ $(document).ready(function (){
     });
 
     socket.on("Start Game", function() {
+        gameStarted = true;
         myHealth = 100;
         opponentsHealth = 100;
         incomingAttacks = [];

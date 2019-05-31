@@ -15,13 +15,13 @@
     <div class="container" id="container">
         <div class="row">
             <div class="col">
-                <div id="createPlayerForm">
+                <div id="createPlayerForm" class="mt-5">
                     <h1>Create User</h1>
                     <p>Username:</p>
                     <input type="text" id="createPlayerName">
                     <button class="btn btn-success" id="createPlayerButton">Create User</button>
                 </div>
-                <div id="createRoomForm">
+                <div id="createRoomForm" class="mt-5">
                     <h1>Create Room</h1>
                     <p>Room Name:</p>
                     <input type="text" id="createRoomName">
@@ -29,15 +29,19 @@
                 </div>
                 <h1 id="roomListHeader">Room List:</h1>
                 <div id="roomList"></div>
-                <div id="waitingRoom">
-                    <p>Waiting for other player...</p>
+                <div id="waitingRoom" class="mt-5">
+                    <h1 id="waitingForPlayer">Waiting for other player...</h1>
                     <button class="btn btn-success" id="startGameButton">Start Game</button>
                 </div>
-                <div id="gameSpace">
-                    <h3 class="text-light">My health: <span id="myHealth"></span></h3>
-                    <h3 class="text-light">Opponent's health: <span id="opponentsHealth"></span></h3>
-                    <h3 class="text-light">Incoming Attacks: <span id="incomingAttacks"></span></h3>
-                    <h3 class="text-light">Outgoing Attacks: <span id="outgoingAttacks"></span></h3>
+                <div id="gameSpace" class="mt-5">
+                    <div class="row">
+                        <div class="col">
+                            <h3 class="text-light mt-5 ml-2">My health: <span id="myHealth"></span></h3>
+                        </div>
+                        <div class="col">
+                            <h3 class="text-light mt-5 float-right mr-2">Opponent's health: <span id="opponentsHealth"></span></h3>
+                        </div>
+                    </div>
                     <div class="row position-relative">
                         <div id="Attacks"></div>
                         <div id="dogWizard"></div>
