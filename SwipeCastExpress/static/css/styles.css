@@ -49,26 +49,49 @@
     right: 0;
 }
 
-#fireAttack {
+.fireAttackIncoming {
     position: absolute;
-    /* z-index: 2; */
-    background-image: url('../images/FireAttack.png');
+    background-image: url('../images/FireAttackIncoming.png');
     background-size: 100% 100%;
     height: 50px;
     width: 50px;
 }
 
-.waterAttack {
+.waterAttackIncoming {
     position: absolute;
-    background-image: url('../images/WaterAttack.png');
+    background-image: url('../images/WaterAttackIncoming.png');
     background-size: 100% 100%;
     height: 50px;
     width: 50px;
 }
 
-.earthAttack {
+.earthAttackIncoming {
     position: absolute;
-    background-image: url('../images/EarthAttack.png');
+    background-image: url('../images/EarthAttackIncoming.png');
+    background-size: 100% 100%;
+    height: 50px;
+    width: 50px;
+}
+
+.fireAttackOutgoing {
+    position: absolute;
+    background-image: url('../images/FireAttackOutgoing.png');
+    background-size: 100% 100%;
+    height: 50px;
+    width: 50px;
+}
+
+.waterAttackOutgoing {
+    position: absolute;
+    background-image: url('../images/WaterAttackOutgoing.png');
+    background-size: 100% 100%;
+    height: 50px;
+    width: 50px;
+}
+
+.earthAttackOutgoing {
+    position: absolute;
+    background-image: url('../images/EarthAttackOutgoing.png');
     background-size: 100% 100%;
     height: 50px;
     width: 50px;
